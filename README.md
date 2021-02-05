@@ -8,6 +8,7 @@ Create a json file called default
 
 Add the following information
 
+```
 {
 	"salesForce": {
 		"User" : "your Salesforce username",
@@ -16,6 +17,7 @@ Add the following information
 		"LoginUrl" : "https://login.salesforce.com"
 	}
 }
+```
 
 # Installing dependencies
 
