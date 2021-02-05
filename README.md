@@ -21,7 +21,7 @@ Add the following information
 
 # Installing dependencies
 
-Download node js from https://nodejs.org/es/download/
+Download node js from [Node JS](https://nodejs.org/es/download/). 
 
 Install the following libraries if you haven't before
 ```
