@@ -13,16 +13,27 @@ let conn;
 let totalMetadata =  [];
 
 class Field {
-    constructor(label, name, type, length, description, helpText, required, externalId) {
-      this.label = label;
-      this.name = name;
-      this.type = type;
-      this.length = length;
-      this.description = description;
-      this.helpText = helpText;
-      this.required = required;
-      this.externalId = externalId;
+    constructor(type, label, apiName, length, decimalPlaces, description,  helpText,
+                required, unique, externalId,  startingNumber, picklistValues, displayFormat,               
+                defaultValue, latLongNotation, visibleLines) {
 
+        this.type = type;
+        this.label = label;
+        this.apiName = apiName;     
+        this.length = length;
+        this.decimalPlaces = decimalPlaces;
+        this.description = description;
+        this.helpText = helpText;      
+        this.required = required;
+        this.unique = unique;
+        this.externalId = externalId;
+        this.startingNumber = startingNumber;
+        this.picklistValues = picklistValues;
+        this.displayFormat = displayFormat;
+        this.defaultValue = defaultValue;
+        this.latLongNotation = latLongNotation;
+        this.visibleLines = visibleLines;
+    
     }
 }
 
@@ -84,16 +95,26 @@ function getFieldsExcel(objectName, fileName){
     .then((rows) => {
        
         for(row of rows){
-            let label = row[0];
-            let name = row[1];
-            let type = row[2];
+            let type = row[0];
+            let label = row[1];
+            let apiName = row[2];            
             let length = row[3];
-            let description = row[4];
-            let helpText = row[5];
-            let required = row[6];
-            let externalId = row[7];
+            let decimalPlaces = row[4];
+            let description = row[5];
+            let helpText = row[6];
+            let required = row[7];
+            let unique = row[8];
+            let externalId = row[9];
+            let startingNumber = row[10];
+            let picklistValues = row[11];
+            let displayFormat = row[12];
+            let defaultValue = row[13];
+            let latLongNotation = row[14];
+            let visibleLines = row[15];
 
-            let field = new Field(label, name, type, length, description, helpText, required, externalId);
+            let field = new Field(type, label, apiName, length, decimalPlaces, description,  helpText,
+                                    required, unique, externalId,  startingNumber, picklistValues, displayFormat,               
+                                    defaultValue, latLongNotation, visibleLines);
             fields.push(field);
         }
 
@@ -111,18 +132,36 @@ function getFieldsExcel(objectName, fileName){
 function createFields(fields, objectName) {
 
     let objectField = objectName+"."+"AAField__c";
+
+    console.log('Fields ' + JSON.stringify(fields));
     
     for(field of fields) {
 
+        let displayDecimals;
+        if(field.displayFormat === 'Decimals'){
+            displayDecimals = true;
+        }else if(field.displayFormat === 'Degrees, minutes, seconds'){
+            displayDecimals = false;
+        }
+
         let metadata = {
-            fullName : objectName+"."+field.name,
-            length: field.length,
             type: field.type,
             label : field.label,
+            fullName : objectName+"."+field.name,            
+            length: field.length,
+            scale: field.decimalPlaces,
             description: field.description,
             inlineHelpText : field.helpText,
             required : field.required,
             externalId : field.externalId,
+            unique: field.unique,
+            startingNumber : field.startingNumber,
+            valueSet: field.picklistValues,
+            displayFormat : field.displayFormat,
+            defaultValue : field.defaultValue,
+            displayLocationInDecimal: displayDecimals,
+            visibleLines : field.visibleLines,
+
 
         }
 
