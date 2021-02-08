@@ -146,6 +146,7 @@ function createFields(fields, objectName) {
         totalMetadata.push(metadata);
     }
 
+    //Seems like using a list, maximum ten fields can be created.
     conn.metadata.create('CustomField', totalMetadata, function(err, result){
 
         if(err){
