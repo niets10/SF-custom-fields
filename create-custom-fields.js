@@ -132,38 +132,10 @@ function getFieldsExcel(objectName, fileName){
 function createFields(fields, objectName) {
 
     let objectField = objectName+"."+"AAField__c";
-
-    console.log('Fields ' + JSON.stringify(fields));
     
-    for(field of fields) {
+    for(field of fields) {       
 
-        let displayDecimals;
-        if(field.displayFormat === 'Decimals'){
-            displayDecimals = true;
-        }else if(field.displayFormat === 'Degrees, minutes, seconds'){
-            displayDecimals = false;
-        }
-
-        let metadata = {
-            type: field.type,
-            label : field.label,
-            fullName : objectName+"."+field.name,            
-            length: field.length,
-            scale: field.decimalPlaces,
-            description: field.description,
-            inlineHelpText : field.helpText,
-            required : field.required,
-            externalId : field.externalId,
-            unique: field.unique,
-            startingNumber : field.startingNumber,
-            valueSet: field.picklistValues,
-            displayFormat : field.displayFormat,
-            defaultValue : field.defaultValue,
-            displayLocationInDecimal: displayDecimals,
-            visibleLines : field.visibleLines,
-
-
-        }
+        let metadata = autoNumberMetadata(field, objectName);
 
         totalMetadata.push(metadata);
     }
@@ -257,6 +229,27 @@ function updateProfilePermission(profile) {
         
         });
     });    
+
+}
+
+function autoNumberMetadata(field, objectName){
+
+    console.log('Field ' + JSON.stringify(field));
+
+    let metadata = {
+        type: field.type,
+        label : field.label,
+        fullName : objectName+"."+field.apiName,
+        description: field.description,
+        inlineHelpText : field.helpText,
+        externalId : field.externalId,        
+        startingNumber : field.startingNumber,
+        displayFormat : field.displayFormat,
+    } 
+
+    console.log('Metadata ' + JSON.stringify(metadata));
+
+    return metadata;
 
 }
 
