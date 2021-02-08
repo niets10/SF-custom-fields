@@ -139,7 +139,9 @@ function createFields(fields, objectName) {
     for(field of fields) {       
 
         // let metadata = autoNumberMetadata(field, objectName);
-        let metadata = metadataMapping.autoNumberMetadata(field, objectName);
+        let metadata = metadataMapping.generateMetadata(field, objectName);
+
+        console.log('Metadata ' + metadata);
 
         totalMetadata.push(metadata);
     }
