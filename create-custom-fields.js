@@ -9,6 +9,9 @@ const jsforce = require('jsforce');
 const salesforceConfig = config.get('salesForce');
 const readline = require("readline");
 
+//module import
+const metadataMapping = require('./utilities/metadata-mapping');
+
 let conn;
 let totalMetadata =  [];
 
@@ -135,7 +138,8 @@ function createFields(fields, objectName) {
     
     for(field of fields) {       
 
-        let metadata = autoNumberMetadata(field, objectName);
+        // let metadata = autoNumberMetadata(field, objectName);
+        let metadata = metadataMapping.autoNumberMetadata(field, objectName);
 
         totalMetadata.push(metadata);
     }
@@ -232,26 +236,7 @@ function updateProfilePermission(profile) {
 
 }
 
-function autoNumberMetadata(field, objectName){
 
-    console.log('Field ' + JSON.stringify(field));
-
-    let metadata = {
-        type: field.type,
-        label : field.label,
-        fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
-        externalId : field.externalId,        
-        startingNumber : field.startingNumber,
-        displayFormat : field.displayFormat,
-    } 
-
-    console.log('Metadata ' + JSON.stringify(metadata));
-
-    return metadata;
-
-}
 
 //Execute main function
 main();
