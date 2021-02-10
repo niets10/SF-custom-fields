@@ -1,3 +1,11 @@
+class PicklistValue {
+    constructor(fullName, label, defaultValue){
+        this.fullName = fullName;
+        this.label = label;        
+        this.defaultValue = defaultValue;
+    }
+}
+
 function generateMetadata(field, objectName) {
 
     let metadata;
@@ -185,6 +193,15 @@ function phoneMetadata(field, objectName){
 }
 function picklistMetadata(field, objectName){
 
+    let fieldValues = field.picklistValues.split(","); 
+    let picklistValues  = [];
+
+    for(value of values){ 
+
+        let picklistValue = new PicklistValue(value.trim(), value.trim(), false);
+        picklistValues.push(picklistValue);
+    }
+
     let metadata = {
         type: field.type,
         label : field.label,
@@ -192,11 +209,27 @@ function picklistMetadata(field, objectName){
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
-        valueSet : list(valueSetDefinition = list(sorted="true", 
-                                                    value = list(fullName = "greet", label= "Greet"), 
-                                                    value = list(fullName = "affirm", label= "Affirm")
-                                                )
-                        )
+        // valueSet : list(valueSetDefinition = list(sorted="true", 
+        //                                             value = list(fullName = "greet", label= "Greet"), 
+        //                                             value = list(fullName = "affirm", label= "Affirm")
+        //                                         )
+        //                 ),
+
+        valueSet : {
+            valueSetDefinition : {
+                sorted: false,
+                value : [
+                    {
+                        fullName : "Option1",
+                        label : "Option1"
+                    },
+                    {
+                        fullName : "Option2",
+                        label : "Option2"
+                    }
+                ]
+            }
+        }
     }
     return metadata;
 }
