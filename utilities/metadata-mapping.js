@@ -1,9 +1,66 @@
-function generateMetadata(field) {
+function generateMetadata(field, objectName) {
 
     let metadata;
 
-    
+    console.log('Field type ' + JSON.stringify(field));
 
+    switch (field.type) {
+        case 'AutoNumber':
+            metadata = autoNumberMetadata(field, objectName);
+            break;
+        case 'Checkbox':
+            metadata = checkboxMetadata(field, objectName);
+            break;
+        case 'Currency':
+            metadata = currencyMetadata(field, objectName);
+            break;
+        case 'Date':
+            metadata = dataDataTimeMetadata(field, objectName);
+            break;
+        case 'DateTime':
+            metadata = dataDataTimeMetadata(field, objectName);
+            break;
+        case 'Email':
+            metadata = emailMetadata(field, objectName);
+            break;
+        case 'Location':
+            metadata = locationMetadata(field, objectName);
+            break;
+        case 'Number':
+            metadata = numberMetadata(field, objectName);
+            break;
+        case 'Percent':
+            metadata = percentMetadata(field, objectName);
+            break;
+        case 'Phone':
+            metadata = phoneMetadata(field, objectName);
+            break;
+        case 'Picklist':
+            metadata = picklistMetadata(field, objectName);
+            break;
+        case 'MultiselectPicklist':
+            metadata = multiPicklistMetadata(field, objectName);
+            break;
+        case 'Text':
+            metadata = textMetadata(field, objectName);
+            break;
+        case 'TextArea':
+            metadata = textAreaMetadata(field, objectName);
+            break;
+        case 'LongTextArea':
+            metadata = longTextAreaMetadata(field, objectName);
+            break;
+        case 'Html':
+            metadata = richTextAreaMetadata(field, objectName);
+            break;
+        case 'Time':
+            metadata = timeMetadata(field, objectName);
+            break;
+        case 'Url':
+            metadata = urlMetadata(field, objectName);
+            break;
+
+      }
 
     return metadata;
 }
@@ -13,22 +70,21 @@ function autoNumberMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         externalId : field.externalId,        
         startingNumber : field.startingNumber,
         displayFormat : field.displayFormat,
     } 
     return metadata;
 }
-
 function checkboxMetadata(field, objectName){
     let metadata = {
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         defaultValue : field.defaultValue
     }
     return metadata;
@@ -38,86 +94,71 @@ function currencyMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,            
-        length: field.length,
+        precision: field.precision,
         scale: field.decimalPlaces,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
 }
-
-function currencyMetadata(field, objectName){
-    let metadata = {
-        type: field.type,
-        label : field.label,
-        fullName : objectName+"."+field.apiName,            
-        length: field.length,
-        scale: field.decimalPlaces,
-        description: field.description,
-        inlineHelpText : field.helpText,
-        required : field.required
-    }
-    return metadata;
-}
-
 function dataDataTimeMetadata(field, objectName){
     let metadata = {
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
 }
-
 function emailMetadata(field, objectName){
     let metadata = {
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
         unique: field.unique,
         externalId : field.externalId
     }
     return metadata;
 }
-
 function locationMetadata(field, objectName){
 
     let displayDecimals;
-    if(field.displayFormat === 'Decimals'){
+    console.log('Display format ' + field.latLongNotation);
+    if(field.latLongNotation == 'Decimals'){
         displayDecimals = true;
-    }else if(field.displayFormat === 'Degrees, minutes, seconds'){
+    }else if(field.latLongNotation == 'Degrees, minutes, seconds'){
         displayDecimals = false;
     }
+
+    console.log('Display decimals ' + displayDecimals);
 
     let metadata = {
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
         scale: field.decimalPlaces,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
         displayLocationInDecimal: displayDecimals
     }
     return metadata;
 }
-
 function numberMetadata(field, objectName){
     let metadata = {
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,            
-        length: field.length,
+        precision: field.precision,
         scale: field.decimalPlaces,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
         unique: field.unique,
         externalId : field.externalId
@@ -129,10 +170,10 @@ function percentMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,            
-        length: field.length,
+        precision: field.precision,
         scale: field.decimalPlaces,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
@@ -142,8 +183,8 @@ function phoneMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
@@ -153,8 +194,8 @@ function picklistMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
         valueSet: field.picklistValues
     }
@@ -165,23 +206,27 @@ function multiPicklistMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
         valueSet: field.picklistValues,
         visibleLines : field.visibleLines
     }
     return metadata;
 }
-
 function textMetadata(field, objectName){
+
+    console.log('Text metadata ' + field.description);
+    console.log('Text true ' + field.description !== null);    
+    console.log('Text false ' + field.description != null);
+
     let metadata = {
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,            
         length: field.length,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
         unique: field.unique,
         externalId : field.externalId,
@@ -193,8 +238,8 @@ function textAreaMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
@@ -205,8 +250,9 @@ function longTextAreaMetadata(field, objectName){
         label : field.label,
         fullName : objectName+"."+field.apiName,            
         length: field.length,
-        description: field.description,
-        inlineHelpText : field.helpText
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
+        visibleLines : field.visibleLines,
     }
     return metadata;
 }
@@ -216,8 +262,8 @@ function richTextAreaMetadata(field, objectName){
         label : field.label,
         fullName : objectName+"."+field.apiName,            
         length: field.length,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         visibleLines : field.visibleLines,
     }
     return metadata;
@@ -227,8 +273,8 @@ function timeMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
@@ -238,11 +284,11 @@ function urlMetadata(field, objectName){
         type: field.type,
         label : field.label,
         fullName : objectName+"."+field.apiName,
-        description: field.description,
-        inlineHelpText : field.helpText,
+        description: field.description !== null ? field.description : '',
+        inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required
     }
     return metadata;
 }
 
-export { autoNumberMetadata, checkboxMetadata };
+module.exports = { generateMetadata };
