@@ -2,8 +2,6 @@ function generateMetadata(field, objectName) {
 
     let metadata;
 
-    console.log('Field type ' + JSON.stringify(field));
-
     switch (field.type) {
         case 'AutoNumber':
             metadata = autoNumberMetadata(field, objectName);
@@ -129,14 +127,11 @@ function emailMetadata(field, objectName){
 function locationMetadata(field, objectName){
 
     let displayDecimals;
-    console.log('Display format ' + field.latLongNotation);
     if(field.latLongNotation == 'Decimals'){
         displayDecimals = true;
     }else if(field.latLongNotation == 'Degrees, minutes, seconds'){
         displayDecimals = false;
     }
-
-    console.log('Display decimals ' + displayDecimals);
 
     let metadata = {
         type: field.type,
@@ -215,10 +210,6 @@ function multiPicklistMetadata(field, objectName){
     return metadata;
 }
 function textMetadata(field, objectName){
-
-    console.log('Text metadata ' + field.description);
-    console.log('Text true ' + field.description !== null);    
-    console.log('Text false ' + field.description != null);
 
     let metadata = {
         type: field.type,
