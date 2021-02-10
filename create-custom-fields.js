@@ -16,7 +16,7 @@ let conn;
 let totalMetadata =  [];
 
 class Field {
-    constructor(type, label, apiName, length, decimalPlaces, description,  helpText,
+    constructor(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
                 required, unique, externalId,  startingNumber, picklistValues, displayFormat,               
                 defaultValue, latLongNotation, visibleLines) {
 
@@ -24,6 +24,7 @@ class Field {
         this.label = label;
         this.apiName = apiName;     
         this.length = length;
+        this.precision = precision;
         this.decimalPlaces = decimalPlaces;
         this.description = description;
         this.helpText = helpText;      
@@ -69,8 +70,8 @@ function main() {
         conn = new jsforce.Connection( {
             loginUrl: salesforceConfig.LoginUrl	
         });
-
-        conn.login(salesforceConfig.User, salesforceConfig.Password, + salesforceConfig.SecuriyToken)
+		
+        conn.login(salesforceConfig.User, salesforceConfig.Password + salesforceConfig.SecurityToken)
         .then( () => {
             console.log('Logged in correctly!');
             getFieldsExcel(input.objectName, input.fileName);
@@ -102,21 +103,22 @@ function getFieldsExcel(objectName, fileName){
             let label = row[1];
             let apiName = row[2];            
             let length = row[3];
-            let decimalPlaces = row[4];
-            let description = row[5];
-            let helpText = row[6];
-            let required = row[7];
-            let unique = row[8];
-            let externalId = row[9];
-            let startingNumber = row[10];
-            let picklistValues = row[11];
-            let displayFormat = row[12];
-            let defaultValue = row[13];
-            let latLongNotation = row[14];
-            let visibleLines = row[15];
+            let precision = row[4];
+            let decimalPlaces = row[5];
+            let description = row[6];
+            let helpText = row[7];
+            let required = row[8];
+            let unique = row[9];
+            let externalId = row[10];
+            let startingNumber = row[11];
+            let picklistValues = row[12];
+            let displayFormat = row[13];
+            let defaultValue = row[14];
+            let latLongNotation = row[15];
+            let visibleLines = row[16];
 
-            let field = new Field(type, label, apiName, length, decimalPlaces, description,  helpText,
-                                    required, unique, externalId,  startingNumber, picklistValues, displayFormat,               
+            let field = new Field(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
+                                    required, unique, externalId, startingNumber, picklistValues, displayFormat,               
                                     defaultValue, latLongNotation, visibleLines);
             fields.push(field);
         }
@@ -141,21 +143,20 @@ function createFields(fields, objectName) {
         // let metadata = autoNumberMetadata(field, objectName);
         let metadata = metadataMapping.generateMetadata(field, objectName);
 
-        console.log('Metadata ' + metadata);
+        totalMetadata.push(metadata);    
 
-        totalMetadata.push(metadata);
+        //Seems like using a list, maximum ten fields can be created.
+        conn.metadata.create('CustomField', metadata, function(err, result){
+
+            if(err){
+                console.log('Error on creation ' + err);
+            }else{
+                console.log('Good result ' + JSON.stringify(result));
+            }
+
+        });
+
     }
-
-    //Seems like using a list, maximum ten fields can be created.
-    conn.metadata.create('CustomField', totalMetadata, function(err, result){
-
-        if(err){
-            console.log('Error on creation ' + err);
-        }else{
-            console.log('Good result ' + JSON.stringify(result));
-        }
-
-    });
 
     console.log('Gettings profiles')
 
@@ -176,6 +177,8 @@ function updateProfiles(profiles){
 }
 
 function updateProfilePermission(profile) {
+	
+	console.log('Found profiles ' + profile);
 
     let profileName;
 
@@ -194,7 +197,7 @@ function updateProfilePermission(profile) {
     
         //Get only not required fields since required ones will have the permission updated correctly
         let relevantFields = totalMetadata.filter(function(met){
-            return !met.required;                
+            return !met.required || met.required == undefined;                
         }).map(function(met) {
             return met.fullName;
         });
@@ -238,8 +241,6 @@ function updateProfilePermission(profile) {
     });    
 
 }
-
-
 
 //Execute main function
 main();
