@@ -35,9 +35,9 @@ npm install-excel-file
 ```
 
 # Creating an excel file
-Create an excel file in the root of the project with extension .xlsx
+Create an excel file in the root of the project with extension `.xlsx`.
 
-You can use the template that is in the repository
+You can use the template that is in the repository.
 
 # Running the script
 Open your command console, navigate to the folder where you clone the project and run the script
