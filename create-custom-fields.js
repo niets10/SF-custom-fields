@@ -177,9 +177,6 @@ function updateProfiles(profiles){
 }
 
 function updateProfilePermission(profile) {
-	
-	console.log('Found profiles ' + profile);
-
     let profileName;
 
     if( profile.Name === 'System Administrator'){
