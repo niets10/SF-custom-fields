@@ -104,6 +104,11 @@ dist
 .tern-port
 Fields.xlsx
 config/default.json
+<<<<<<< HEAD
 FailedFields.xlsx
 FieldsTesting.xlsx
 Fields_Template (with picklist).xlsx
+=======
+FieldsTesting.xlsx
+FailedFields.xlsx
+>>>>>>> b0a55ed

@@ -9,20 +9,35 @@ const jsforce = require('jsforce');
 const salesforceConfig = config.get('salesForce');
 const readline = require("readline");
 
+//module import
+const metadataMapping = require('./utilities/metadata-mapping');
+
 let conn;
 let totalMetadata =  [];
 
 class Field {
-    constructor(label, name, type, length, description, helpText, required, externalId) {
-      this.label = label;
-      this.name = name;
-      this.type = type;
-      this.length = length;
-      this.description = description;
-      this.helpText = helpText;
-      this.required = required;
-      this.externalId = externalId;
+    constructor(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
+                required, unique, externalId,  startingNumber, picklistValues, displayFormat,               
+                defaultValue, latLongNotation, visibleLines) {
 
+        this.type = type;
+        this.label = label;
+        this.apiName = apiName;     
+        this.length = length;
+        this.precision = precision;
+        this.decimalPlaces = decimalPlaces;
+        this.description = description;
+        this.helpText = helpText;      
+        this.required = required;
+        this.unique = unique;
+        this.externalId = externalId;
+        this.startingNumber = startingNumber;
+        this.picklistValues = picklistValues;
+        this.displayFormat = displayFormat;
+        this.defaultValue = defaultValue;
+        this.latLongNotation = latLongNotation;
+        this.visibleLines = visibleLines;
+    
     }
 }
 
@@ -55,8 +70,8 @@ function main() {
         conn = new jsforce.Connection( {
             loginUrl: salesforceConfig.LoginUrl	
         });
-
-        conn.login(salesforceConfig.User, salesforceConfig.Password, + salesforceConfig.SecuriyToken)
+		
+        conn.login(salesforceConfig.User, salesforceConfig.Password + salesforceConfig.SecurityToken)
         .then( () => {
             console.log('Logged in correctly!');
             getFieldsExcel(input.objectName, input.fileName);
@@ -84,16 +99,27 @@ function getFieldsExcel(objectName, fileName){
     .then((rows) => {
        
         for(row of rows){
-            let label = row[0];
-            let name = row[1];
-            let type = row[2];
+            let type = row[0];
+            let label = row[1];
+            let apiName = row[2];            
             let length = row[3];
-            let description = row[4];
-            let helpText = row[5];
-            let required = row[6];
-            let externalId = row[7];
+            let precision = row[4];
+            let decimalPlaces = row[5];
+            let description = row[6];
+            let helpText = row[7];
+            let required = row[8];
+            let unique = row[9];
+            let externalId = row[10];
+            let startingNumber = row[11];
+            let picklistValues = row[12];
+            let displayFormat = row[13];
+            let defaultValue = row[14];
+            let latLongNotation = row[15];
+            let visibleLines = row[16];
 
-            let field = new Field(label, name, type, length, description, helpText, required, externalId);
+            let field = new Field(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
+                                    required, unique, externalId, startingNumber, picklistValues, displayFormat,               
+                                    defaultValue, latLongNotation, visibleLines);
             fields.push(field);
         }
 
@@ -112,32 +138,25 @@ function createFields(fields, objectName) {
 
     let objectField = objectName+"."+"AAField__c";
     
-    for(field of fields) {
+    for(field of fields) {       
 
-        let metadata = {
-            fullName : objectName+"."+field.name,
-            length: field.length,
-            type: field.type,
-            label : field.label,
-            description: field.description,
-            inlineHelpText : field.helpText,
-            required : field.required,
-            externalId : field.externalId,
+        // let metadata = autoNumberMetadata(field, objectName);
+        let metadata = metadataMapping.generateMetadata(field, objectName);
 
-        }
+        totalMetadata.push(metadata);    
 
-        totalMetadata.push(metadata);
+        //Seems like using a list, maximum ten fields can be created.
+        conn.metadata.create('CustomField', metadata, function(err, result){
+
+            if(err){
+                console.log('Error on creation ' + err);
+            }else{
+                console.log('Good result ' + JSON.stringify(result));
+            }
+
+        });
+
     }
-
-    conn.metadata.create('CustomField', totalMetadata, function(err, result){
-
-        if(err){
-            console.log('Error on creation ' + err);
-        }else{
-            console.log('Good result ' + JSON.stringify(result));
-        }
-
-    });
 
     console.log('Gettings profiles')
 
@@ -158,7 +177,6 @@ function updateProfiles(profiles){
 }
 
 function updateProfilePermission(profile) {
-
     let profileName;
 
     if( profile.Name === 'System Administrator'){
@@ -176,7 +194,7 @@ function updateProfilePermission(profile) {
     
         //Get only not required fields since required ones will have the permission updated correctly
         let relevantFields = totalMetadata.filter(function(met){
-            return !met.required;                
+            return !met.required || met.required == undefined;                
         }).map(function(met) {
             return met.fullName;
         });
