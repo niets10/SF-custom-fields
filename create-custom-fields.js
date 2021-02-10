@@ -135,8 +135,6 @@ function getFieldsExcel(objectName, fileName){
 } 
 
 function createFields(fields, objectName) {
-
-    let objectField = objectName+"."+"AAField__c";
     
     for(field of fields) {       
 
@@ -155,7 +153,6 @@ function createFields(fields, objectName) {
             }
 
         });
-
     }
 
     console.log('Gettings profiles')
