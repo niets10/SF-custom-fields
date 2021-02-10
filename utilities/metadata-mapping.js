@@ -62,7 +62,6 @@ function generateMetadata(field, objectName) {
 
     return metadata;
 }
-
 function autoNumberMetadata(field, objectName){
     let metadata = {
         type: field.type,
@@ -185,6 +184,7 @@ function phoneMetadata(field, objectName){
     return metadata;
 }
 function picklistMetadata(field, objectName){
+
     let metadata = {
         type: field.type,
         label : field.label,
@@ -192,7 +192,11 @@ function picklistMetadata(field, objectName){
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
-        valueSet: field.picklistValues
+        valueSet : list(valueSetDefinition = list(sorted="true", 
+                                                    value = list(fullName = "greet", label= "Greet"), 
+                                                    value = list(fullName = "affirm", label= "Affirm")
+                                                )
+                        )
     }
     return metadata;
 }
