@@ -1,8 +1,7 @@
 class PicklistValue {
-    constructor(fullName, label, defaultValue){
+    constructor(fullName, label){
         this.fullName = fullName;
         this.label = label;        
-        this.defaultValue = defaultValue;
     }
 }
 
@@ -196,9 +195,9 @@ function picklistMetadata(field, objectName){
     let fieldValues = field.picklistValues.split(","); 
     let picklistValues  = [];
 
-    for(value of values){ 
+    for(value of fieldValues){ 
 
-        let picklistValue = new PicklistValue(value.trim(), value.trim(), false);
+        let picklistValue = new PicklistValue(value.trim(), value.trim());
         picklistValues.push(picklistValue);
     }
 
@@ -209,31 +208,26 @@ function picklistMetadata(field, objectName){
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
-        // valueSet : list(valueSetDefinition = list(sorted="true", 
-        //                                             value = list(fullName = "greet", label= "Greet"), 
-        //                                             value = list(fullName = "affirm", label= "Affirm")
-        //                                         )
-        //                 ),
-
         valueSet : {
             valueSetDefinition : {
                 sorted: false,
-                value : [
-                    {
-                        fullName : "Option1",
-                        label : "Option1"
-                    },
-                    {
-                        fullName : "Option2",
-                        label : "Option2"
-                    }
-                ]
+                value : picklistValues
             }
         }
     }
     return metadata;
 }
 function multiPicklistMetadata(field, objectName){
+
+    let fieldValues = field.picklistValues.split(","); 
+    let picklistValues  = [];
+
+    for(value of fieldValues){ 
+
+        let picklistValue = new PicklistValue(value.trim(), value.trim());
+        picklistValues.push(picklistValue);
+    }
+
     let metadata = {
         type: field.type,
         label : field.label,
@@ -241,7 +235,12 @@ function multiPicklistMetadata(field, objectName){
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
         required : field.required,
-        valueSet: field.picklistValues,
+        valueSet : {
+            valueSetDefinition : {
+                sorted: false,
+                value : picklistValues
+            }
+        },
         visibleLines : field.visibleLines
     }
     return metadata;
