@@ -220,13 +220,10 @@ function picklistMetadata(field, objectName){
 function multiPicklistMetadata(field, objectName){
 
     let fieldValues = field.picklistValues.split(","); 
-    let picklistValues  = [];
-
-    for(value of fieldValues){ 
-
-        let picklistValue = new PicklistValue(value.trim(), value.trim());
-        picklistValues.push(picklistValue);
-    }
+   
+    let picklistValues = fieldValues.map(value => {
+        return new PicklistValue(value.trim(), value.trim());
+    })
 
     let metadata = {
         type: field.type,
