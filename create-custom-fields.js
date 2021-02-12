@@ -190,11 +190,9 @@ function updateProfilePermission(profile) {
         var updateProfile = false;
     
         //Get only not required fields since required ones will have the permission updated correctly
-        let relevantFields = totalMetadata.filter(function(met){
+        let relevantFields = totalMetadata.filter(met => {
             return !met.required || met.required == undefined;                
-        }).map(function(met) {
-            return met.fullName;
-        });
+        }).map( met => met.fullName);
 
         for(var i=0; i<profile.fieldPermissions.length; i++){
                 
