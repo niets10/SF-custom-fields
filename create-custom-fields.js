@@ -51,14 +51,12 @@ class Field {
     
     }
 }
-
 class Input {
     constructor(objectName, fileName){
         this.objectName = objectName;
         this.fileName = fileName;
     }
 }
-
 function main() {
   const rl = READLINE.createInterface({
     input: process.stdin,
@@ -90,7 +88,14 @@ function main() {
       )
       .then(() => {
         console.log("Logged in correctly!");
-        getFieldsExcel(input.objectName, input.fileName);
+
+        getFieldsExcel(input.objectName, input.fileName)
+        .then( () => {
+          console.log('Finished... creating file');
+          writeFile();
+          console.log('File created!');
+        });
+        
       })
       .catch((error) => {
         console.log("Error is " + error);
@@ -105,7 +110,7 @@ function main() {
 
 }
 
-function getFieldsExcel(objectName, fileName){
+async function getFieldsExcel(objectName, fileName){
 
     console.log('Getting fields from excel');
     const xlsxFile = require('read-excel-file/node');  
@@ -113,8 +118,8 @@ function getFieldsExcel(objectName, fileName){
     let fields = [];
     let filePath = './'+fileName+'.xlsx';
 
-    xlsxFile(filePath)
-    .then((rows) => {
+    await xlsxFile(filePath)
+    .then( async (rows) => {
        
         for(row of rows){
             let type = row[0];
@@ -143,9 +148,32 @@ function getFieldsExcel(objectName, fileName){
 
         //Remove first element (the header)
         fields.shift();
-        createFields(fields, objectName);
-    })
+        console.log('Get fields finished!');
 
+        await createFields(fields, objectName)
+        .then( () => {         
+
+          //Check if any fields have been inserted, otherwise we stop the process
+          if(!totalMetadata.length){
+            // writeFile();
+            return;
+          } 
+          
+          console.log('Gettings profiles');
+
+          queryProfiles()
+          .then( (profiles) => {
+              updateProfiles(profiles);
+          })
+          .catch( (error) => {
+              worksheet.addRow({
+                  errorOn: "On reading creating field",
+                  errorMessage: error,
+                }); 
+          })  
+        })
+
+    })
     .catch( (error) => {
         console.log('Error when reading the excel file ' + error);
         worksheet.addRow({
@@ -156,51 +184,38 @@ function getFieldsExcel(objectName, fileName){
 
 } 
 
-function createFields(fields, objectName) {
-    
-    for(field of fields) {       
+async function createFields(fields, objectName) {
 
-        // let metadata = autoNumberMetadata(field, objectName);
-        let metadata = metadataMapping.generateMetadata(field, objectName);
+  for(field of fields) {       
 
-        //Seems like using a list, maximum ten fields can be created.
-        conn.metadata.create('CustomField', metadata, function(err, result){
+    // let metadata = autoNumberMetadata(field, objectName);
+    let metadata = metadataMapping.generateMetadata(field, objectName);
 
-            if(err){
-                console.log('Error on creation ' + err);
+    //Seems like using a list, maximum ten fields can be created.
+    await conn.metadata.create('CustomField', metadata, function(err, result){
+
+        if(err){
+            console.log('Error on creation ' + err);
+            //Log error
+        }else{               
+            if(result.success){                   
+                console.log('Good result ' + JSON.stringify(result));
+
+                //If the field is created, then we add it to the list of total metadata
+                totalMetadata.push(metadata); 
+            }else{
                 //Log error
-            }else{               
-                if(result.success){                   
-                    console.log('Good result ' + JSON.stringify(result));
-
-                    //If the field is created, then we add it to the list of total metadata
-                    totalMetadata.push(metadata); 
-                }else{
-                     //Log error
-                     console.log('Error when creating the field ' + JSON.stringify(result));
-                     worksheet.addRow({
-                        errorOn: "On reading creating field",
-                        errorMessage: result.errors,
-                        errorField: result.fullName,
-                      });
-                }
+                console.log('Error when creating the field ' + JSON.stringify(result));
+                worksheet.addRow({
+                    errorOn: "On creating field",
+                    errorMessage: result.errors,
+                    errorField: result.fullName,
+                  });
             }
-        });
+        }
+    });
 
-    }
-
-    console.log('Gettings profiles')
-
-    queryProfiles()
-    .then( (profiles) => {
-        updateProfiles(profiles);
-    })
-    .catch( (error) => {
-        worksheet.addRow({
-            errorOn: "On reading creating field",
-            errorMessage: error,
-          }); 
-    })
+  } 
 }  
 
 function queryProfiles(){
@@ -230,7 +245,7 @@ function updateProfilePermission(profile) {
 
         //Check if any fields have been inserted, otherwise we stop the process
         if(!totalMetadata.length){
-            writeFile();
+            // writeFile();
             return;
         } 
     
