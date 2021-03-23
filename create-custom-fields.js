@@ -1,13 +1,24 @@
 //Required libraries
 
 //npm install config
-//npm install jsforce
-//npm install-excel-file
+//npm install JSFORCE
+//npm install read-excel-file
+//npm install exceljs
 
-const config = require('config');
-const jsforce = require('jsforce');
-const salesforceConfig = config.get('salesForce');
-const readline = require("readline");
+const CONFIG = require('config');
+const JSFORCE = require('jsforce');
+const SALESFORCE_CONFIG = CONFIG.get('salesForce');
+const READLINE = require("readline");
+
+//Create excel file to log all the errors;
+const EXCELJS = require('exceljs');
+let workbook = new EXCELJS.Workbook();
+let worksheet = workbook.addWorksheet("Errors");
+worksheet.columns = [
+    { header: "Error on", key: "errorOn" },
+    { header: "Error Message", key: "errorMessage" },
+    { header: "Error field", key: "errorField" },
+];
 
 //module import
 const metadataMapping = require('./utilities/metadata-mapping');
@@ -49,43 +60,50 @@ class Input {
 }
 
 function main() {
-    
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
+  const rl = READLINE.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  let input = new Input();
+
+  rl.question(
+    "What's the object API name? (including __c): ",
+    function (objectName) {
+      input.objectName = objectName;
+      rl.question("What's your excel file name?: ", function (fileName) {
+        input.fileName = fileName;
+        rl.close();
+      });
+    }
+  );
+
+  rl.on("close", function () {
+    conn = new JSFORCE.Connection({
+      loginUrl: SALESFORCE_CONFIG.LoginUrl,
     });
 
-    let input = new Input();
-
-    rl.question("What's the object API name? (including __c): ", function(objectName) {
-        input.objectName = objectName;
-        rl.question("What's your excel file name?: ", function(fileName) {
-            input.fileName = fileName;
-            rl.close();
+    conn
+      .login(
+        SALESFORCE_CONFIG.User,
+        SALESFORCE_CONFIG.Password + SALESFORCE_CONFIG.SecurityToken
+      )
+      .then(() => {
+        console.log("Logged in correctly!");
+        getFieldsExcel(input.objectName, input.fileName);
+      })
+      .catch((error) => {
+        console.log("Error is " + error);
+        //Log error
+        worksheet.addRow({
+          errorOn: "On reading connecting",
+          errorMessage: error,
         });
-    });
+      });
 
-    rl.on("close", function() {
-
-        conn = new jsforce.Connection( {
-            loginUrl: salesforceConfig.LoginUrl	
-        });
-		
-        conn.login(salesforceConfig.User, salesforceConfig.Password + salesforceConfig.SecurityToken)
-        .then( () => {
-            console.log('Logged in correctly!');
-            getFieldsExcel(input.objectName, input.fileName);
-
-            }        
-        )
-        .catch( (error) => {
-                    console.log('Error is ' + error);
-                }
-        )
-    });
+  });
 
 }
-
 
 function getFieldsExcel(objectName, fileName){
 
@@ -130,6 +148,10 @@ function getFieldsExcel(objectName, fileName){
 
     .catch( (error) => {
         console.log('Error when reading the excel file ' + error);
+        worksheet.addRow({
+          errorOn: "On reading excel file",
+          errorMessage: error,
+        });
     })
 
 } 
@@ -141,18 +163,30 @@ function createFields(fields, objectName) {
         // let metadata = autoNumberMetadata(field, objectName);
         let metadata = metadataMapping.generateMetadata(field, objectName);
 
-        totalMetadata.push(metadata);    
-
         //Seems like using a list, maximum ten fields can be created.
         conn.metadata.create('CustomField', metadata, function(err, result){
 
             if(err){
                 console.log('Error on creation ' + err);
-            }else{
-                console.log('Good result ' + JSON.stringify(result));
-            }
+                //Log error
+            }else{               
+                if(result.success){                   
+                    console.log('Good result ' + JSON.stringify(result));
 
+                    //If the field is created, then we add it to the list of total metadata
+                    totalMetadata.push(metadata); 
+                }else{
+                     //Log error
+                     console.log('Error when creating the field ' + JSON.stringify(result));
+                     worksheet.addRow({
+                        errorOn: "On reading creating field",
+                        errorMessage: result.errors,
+                        errorField: result.fullName,
+                      });
+                }
+            }
         });
+
     }
 
     console.log('Gettings profiles')
@@ -161,7 +195,12 @@ function createFields(fields, objectName) {
     .then( (profiles) => {
         updateProfiles(profiles);
     })
-
+    .catch( (error) => {
+        worksheet.addRow({
+            errorOn: "On reading creating field",
+            errorMessage: error,
+          }); 
+    })
 }  
 
 function queryProfiles(){
@@ -188,6 +227,12 @@ function updateProfilePermission(profile) {
     .then(function(profile) {
      
         var updateProfile = false;
+
+        //Check if any fields have been inserted, otherwise we stop the process
+        if(!totalMetadata.length){
+            writeFile();
+            return;
+        } 
     
         //Get only not required fields since required ones will have the permission updated correctly
         let relevantFields = totalMetadata.filter(met => {
@@ -200,9 +245,6 @@ function updateProfilePermission(profile) {
                 if(profile.fieldPermissions[i].field.startsWith(relevantField)){     
                     
                     updateProfile = true;
-
-                    //Empty tab Visilibilites for not updating them since it was giving an error
-                    // profile.tabVisibilities = [];
                     profile.fieldPermissions[i].editable = true;
                     profile.fieldPermissions[i].readable = true;
 
@@ -217,21 +259,27 @@ function updateProfilePermission(profile) {
 
         let fullName = profile.fullName;
         
-        return conn.metadata.update('Profile', {                
-                fullName,
-                fieldPermissions : profile.fieldPermissions
-                
-                }, function(err, result){
+        return conn.metadata.update(
+          "Profile",
+          {
+            fullName,
+            fieldPermissions: profile.fieldPermissions,
+          },
+          function (err, result) {
+            if (err) {
+              console.log("Error on update " + err);
+            } else {
+              console.log("Good result " + JSON.stringify(result));
+            }
+          }
+        );
 
-                if(err){
-                    console.log('Error on update ' + err);
-                }else{
-                    console.log('Good result ' + JSON.stringify(result));
-                }
-        
-        });
-    });    
+        writeFile();
+    })
+}
 
+function writeFile(){
+    workbook.xlsx.writeFile("Errors.xlsx");
 }
 
 //Execute main function
