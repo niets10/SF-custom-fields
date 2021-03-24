@@ -150,8 +150,9 @@ async function getFieldsExcel(objectName, fileName){
         fields.shift();
         console.log('Get fields finished!');
 
+        //Wait for the fields to be created and when finished, continue
         await createFields(fields, objectName)
-        .then( () => {         
+        .then( async () => {         
 
           //Check if any fields have been inserted, otherwise we stop the process
           if(!totalMetadata.length){
@@ -161,9 +162,14 @@ async function getFieldsExcel(objectName, fileName){
           
           console.log('Gettings profiles');
 
-          queryProfiles()
-          .then( (profiles) => {
-              updateProfiles(profiles);
+          //Wait for the profiles to be queried, when finished, continue
+          await queryProfiles()
+          .then( async (profiles) => {            
+            //Wait for the profiles to be updated, when finished, continue
+            console.log('Profiles fetched!');
+            await updateProfiles(profiles).then(() => {
+              console.log('Profiles updated!');
+            });
           })
           .catch( (error) => {
               worksheet.addRow({
@@ -184,6 +190,7 @@ async function getFieldsExcel(objectName, fileName){
 
 } 
 
+//It will perform a connection to API, so async it should be
 async function createFields(fields, objectName) {
 
   for(field of fields) {       
@@ -192,6 +199,8 @@ async function createFields(fields, objectName) {
     let metadata = metadataMapping.generateMetadata(field, objectName);
 
     //Seems like using a list, maximum ten fields can be created.
+
+    //This is a async function, we need to wait for it to finish!
     await conn.metadata.create('CustomField', metadata, function(err, result){
 
         if(err){
@@ -218,18 +227,21 @@ async function createFields(fields, objectName) {
   } 
 }  
 
-function queryProfiles(){
-    return conn.query("SELECT Id, Name FROM Profile");
+//It will perform a connection to API, so async it should be
+async function queryProfiles(){
+    return await conn.query("SELECT Id, Name FROM Profile");
 }
 
-function updateProfiles(profiles){
+async function updateProfiles(profiles){
 	// Process in pararel all profiles
-	return profiles.records.map(updateProfilePermission);
+	return await profiles.records.map(updateProfilePermission);
 }
 
-function updateProfilePermission(profile) {
+async function updateProfilePermission(profile) {
+    
     let profileName;
 
+    console.log('What are the names : ' + profile.Name);
     if( profile.Name === 'System Administrator'){
         profileName = 'Admin';
     }else if( profile.Name === 'Standard User'){    
@@ -238,16 +250,18 @@ function updateProfilePermission(profile) {
         profileName = profile.Name;
     }
 
-    return conn.metadata.read('Profile', profileName)
+    await conn.metadata.read('Profile', profileName)
     .then(function(profile) {
-     
-        var updateProfile = false;
 
-        //Check if any fields have been inserted, otherwise we stop the process
-        if(!totalMetadata.length){
-            // writeFile();
-            return;
-        } 
+      
+      //  console.log('Profile name ' + profile.fullName);
+      //   if(!profile){
+      //     console.log('Profile ' + JSON.stringify(profile));
+      //     return;
+      //   }
+
+
+        var updateProfile = false;
     
         //Get only not required fields since required ones will have the permission updated correctly
         let relevantFields = totalMetadata.filter(met => {
@@ -268,13 +282,16 @@ function updateProfilePermission(profile) {
         }
 
         if(!updateProfile) return null;
-		return profile;
+
+		    return profile;
+    }).catch(() => {
+      console.log('Some undefined profiles');
     })
-    .then(function(profile){ 
+    .then(async function(profile){ 
 
         let fullName = profile.fullName;
         
-        return conn.metadata.update(
+        return await conn.metadata.update(
           "Profile",
           {
             fullName,
@@ -288,8 +305,6 @@ function updateProfilePermission(profile) {
             }
           }
         );
-
-        writeFile();
     })
 }
 
