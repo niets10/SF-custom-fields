@@ -154,29 +154,30 @@ async function getFieldsExcel(objectName, fileName){
         await createFields(fields, objectName)
         .then( async () => {         
 
-          //Check if any fields have been inserted, otherwise we stop the process
-          if(!totalMetadata.length){
-            // writeFile();
-            return;
-          } 
-          
-          console.log('Gettings profiles');
+            //Check if any fields have been inserted, otherwise we stop the process
+            if(!totalMetadata.length){
+              // writeFile();
+              return;
+            } 
+            
+            console.log('Gettings profiles');
 
-          //Wait for the profiles to be queried, when finished, continue
-          await queryProfiles()
-          .then( async (profiles) => {            
-            //Wait for the profiles to be updated, when finished, continue
-            console.log('Profiles fetched!');
-            await updateProfiles(profiles).then(() => {
-              console.log('Profiles updated!');
-            });
-          })
-          .catch( (error) => {
-              worksheet.addRow({
-                  errorOn: "On reading creating field",
-                  errorMessage: error,
-                }); 
-          })  
+            //Wait for the profiles to be queried, when finished, continue
+            await queryProfiles()
+            .then( async (profiles) => {            
+              //Wait for the profiles to be updated, when finished, continue
+              console.log('Profiles fetched!');
+              await updateProfiles(profiles)
+              .then(() => {
+                console.log('Profiles updated!');
+              });
+            })
+            .catch( (error) => {
+                worksheet.addRow({
+                    errorOn: "On querying profiles",
+                    errorMessage: error,
+                  }); 
+            })  
         })
 
     })
@@ -234,14 +235,12 @@ async function queryProfiles(){
 
 async function updateProfiles(profiles){
 	// Process in pararel all profiles
-	return await profiles.records.map(updateProfilePermission);
+	await profiles.records.map(updateProfilePermission);
 }
 
 async function updateProfilePermission(profile) {
     
     let profileName;
-
-    console.log('What are the names : ' + profile.Name);
     if( profile.Name === 'System Administrator'){
         profileName = 'Admin';
     }else if( profile.Name === 'Standard User'){    
@@ -251,47 +250,48 @@ async function updateProfilePermission(profile) {
     }
 
     await conn.metadata.read('Profile', profileName)
-    .then(function(profile) {
+    .then( async function(profile) {
 
-      
-      //  console.log('Profile name ' + profile.fullName);
-      //   if(!profile){
-      //     console.log('Profile ' + JSON.stringify(profile));
-      //     return;
-      //   }
+        if(profile.fieldPermissions == undefined) return;
+        
+        let updateProfile = false;
 
-
-        var updateProfile = false;
+        try{
     
-        //Get only not required fields since required ones will have the permission updated correctly
-        let relevantFields = totalMetadata.filter(met => {
-            return !met.required || met.required == undefined;                
-        }).map( met => met.fullName);
+          //Get only not required fields since required ones will have the permission updated correctly
+          let relevantFields = totalMetadata.filter(met => {
+              return !met.required || met.required == undefined;                
+          }).map( met => met.fullName);
 
-        for(var i=0; i<profile.fieldPermissions.length; i++){
-                
-            for(relevantField of relevantFields){
-                if(profile.fieldPermissions[i].field.startsWith(relevantField)){     
-                    
-                    updateProfile = true;
-                    profile.fieldPermissions[i].editable = true;
-                    profile.fieldPermissions[i].readable = true;
+          for(let i=0; i<profile.fieldPermissions.length; i++){
+                  
+              for(relevantField of relevantFields){
+                  if(profile.fieldPermissions[i].field.startsWith(relevantField)){     
+                      
+                      updateProfile = true;
+                      profile.fieldPermissions[i].editable = true;
+                      profile.fieldPermissions[i].readable = true;
 
-                }
-            }
+                  }
+              }
+          }
+
+        } catch(error){
+          console.log('Error ' + error);
+          updateProfile = false;
         }
 
         if(!updateProfile) return null;
 
-		    return profile;
-    }).catch(() => {
-      console.log('Some undefined profiles');
+		    return await profile;
     })
     .then(async function(profile){ 
 
+        if(profile == null || profile == undefined) return;
+
         let fullName = profile.fullName;
         
-        return await conn.metadata.update(
+        await conn.metadata.update(
           "Profile",
           {
             fullName,
