@@ -165,12 +165,12 @@ async function getFieldsExcel(objectName, fileName){
             //Wait for the profiles to be queried, when finished, continue
             await queryProfiles()
             .then( async (profiles) => {            
-              //Wait for the profiles to be updated, when finished, continue
-              console.log('Profiles fetched!');
-              await updateProfiles(profiles)
-              .then(() => {
-                console.log('Profiles updated!');
-              });
+                //Wait for the profiles to be updated, when finished, continue
+                console.log('Profiles fetched!');
+                await updateProfiles(profiles)
+                .then(() => {
+                  console.log('Profiles updated! ');
+                });
             })
             .catch( (error) => {
                 worksheet.addRow({
@@ -201,8 +201,8 @@ async function createFields(fields, objectName) {
 
     //Seems like using a list, maximum ten fields can be created.
 
-    //This is a async function, we need to wait for it to finish!
-    await conn.metadata.create('CustomField', metadata, function(err, result){
+    //Returns a promise
+    return conn.metadata.create('CustomField', metadata, function(err, result){
 
         if(err){
             console.log('Error on creation ' + err);
@@ -224,18 +224,29 @@ async function createFields(fields, objectName) {
             }
         }
     });
-
   } 
 }  
 
 //It will perform a connection to API, so async it should be
-async function queryProfiles(){
-    return await conn.query("SELECT Id, Name FROM Profile");
+function queryProfiles(){
+    console.log('Querying profiles');
+    //Return a promise
+    return conn.query("SELECT Id, Name FROM Profile");
 }
 
 async function updateProfiles(profiles){
 	// Process in pararel all profiles
-	await profiles.records.map(updateProfilePermission);
+  // let promise = new Promise(async (resolve, reject) => {
+  //   await profiles.records.map(updateProfilePermission)
+  //   .then(resolve('Done!'));    
+  // })
+
+  let promises = profiles.records.map(updateProfilePermission);
+  // Promise.all(promises).then( () => console.log('Promised done!'));
+  return Promise.all(promises);
+
+	// return await profiles.records.map(updateProfilePermission);
+  // return promise;
 }
 
 async function updateProfilePermission(profile) {
@@ -249,8 +260,8 @@ async function updateProfilePermission(profile) {
         profileName = profile.Name;
     }
 
-    await conn.metadata.read('Profile', profileName)
-    .then( async function(profile) {
+    return conn.metadata.read('Profile', profileName)
+    .then( function(profile) {
 
         if(profile.fieldPermissions == undefined) return;
         
@@ -283,7 +294,7 @@ async function updateProfilePermission(profile) {
 
         if(!updateProfile) return null;
 
-		    return await profile;
+		    return profile;
     })
     .then(async function(profile){ 
 
@@ -291,7 +302,7 @@ async function updateProfilePermission(profile) {
 
         let fullName = profile.fullName;
         
-        await conn.metadata.update(
+        return conn.metadata.update(
           "Profile",
           {
             fullName,
