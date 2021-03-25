@@ -25,6 +25,7 @@ const metadataMapping = require('./utilities/metadata-mapping');
 
 let conn;
 let totalMetadata =  [];
+let objName;
 
 class Field {
     constructor(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
@@ -69,6 +70,7 @@ function main() {
     "What's the object API name? (including __c): ",
     function (objectName) {
       input.objectName = objectName;
+      objName = input.objectName;
       rl.question("What's your excel file name?: ", function (fileName) {
         input.fileName = fileName;
         rl.close();
@@ -151,7 +153,7 @@ async function getFieldsExcel(objectName, fileName){
         console.log('Get fields finished!');
 
         //Wait for the fields to be created and when finished, continue
-        await createFields(fields, objectName)
+        await createFields(fields)
         .then( async () => {         
 
             //Check if any fields have been inserted, otherwise we stop the process
@@ -191,40 +193,44 @@ async function getFieldsExcel(objectName, fileName){
 
 } 
 
+function createFields(fields){
+  // Process in pararel all fields
+  let promises = fields.map(createField);
+  return Promise.all(promises);
+}
+
 //It will perform a connection to API, so async it should be
-async function createFields(fields, objectName) {
+function createField(field) {
 
-  for(field of fields) {       
+  let objectName = objName;  
 
-    // let metadata = autoNumberMetadata(field, objectName);
-    let metadata = metadataMapping.generateMetadata(field, objectName);
+  // let metadata = autoNumberMetadata(field, objectName);
+  let metadata = metadataMapping.generateMetadata(field, objectName);
 
-    //Seems like using a list, maximum ten fields can be created.
+  //Seems like using a list, maximum ten fields can be created
+  //Returns a promise
+  return conn.metadata.create('CustomField', metadata, function(err, result){
 
-    //Returns a promise
-    return conn.metadata.create('CustomField', metadata, function(err, result){
+      if(err){
+          console.log('Error on creation ' + err);
+          //Log error
+      }else{               
+          if(result.success){                   
+              console.log('Field created: ' + JSON.stringify(result));
 
-        if(err){
-            console.log('Error on creation ' + err);
-            //Log error
-        }else{               
-            if(result.success){                   
-                console.log('Field created: ' + JSON.stringify(result));
-
-                //If the field is created, then we add it to the list of total metadata
-                totalMetadata.push(metadata); 
-            }else{
-                //Log error
-                console.log('Error when creating the field ' + JSON.stringify(result));
-                worksheet.addRow({
-                    errorOn: "On creating field",
-                    errorMessage: result.errors,
-                    errorField: result.fullName,
-                  });
-            }
-        }
-    });
-  } 
+              //If the field is created, then we add it to the list of total metadata
+              totalMetadata.push(metadata); 
+          }else{
+              //Log error
+              console.log('Error when creating the field ' + JSON.stringify(result));
+              worksheet.addRow({
+                  errorOn: "On creating field",
+                  errorMessage: result.errors,
+                  errorField: result.fullName,
+                });
+          }
+      }
+  });
 }  
 
 //It will perform a connection to API, so async it should be
@@ -233,14 +239,12 @@ function queryProfiles(){
     //Return a promise
     return conn.query("SELECT Id, Name FROM Profile");
 }
-
 function updateProfiles(profiles){
 	// Process in pararel all profiles
-  let promises = profiles.records.map(updateProfilePermission);
+  let promises = profiles.records.map(updateProfile);
   return Promise.all(promises);
 }
-
-function updateProfilePermission(profile) {
+function updateProfile(profile) {
     
     let profileName;
     if( profile.Name === 'System Administrator'){
@@ -309,7 +313,6 @@ function updateProfilePermission(profile) {
         );
     })
 }
-
 function writeFile(){
     workbook.xlsx.writeFile("Errors.xlsx");
 }
