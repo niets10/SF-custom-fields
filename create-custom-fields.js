@@ -27,6 +27,8 @@ let conn;
 let totalMetadata =  [];
 let objectName;
 let fileName;
+//Determines if there's an error. If so, we create the file.
+let createErrorFile = false;
 
 class Field {
     constructor(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
@@ -85,9 +87,13 @@ function main() {
 
         getFieldsExcel(fileName)
         .then( () => {
-          console.log('Finished... creating file');
-          writeFile();
-          console.log('File created!');
+          if(createErrorFile){
+            console.log('Creating error file...');
+            writeFile();
+            console.log('File created!');
+          }else{
+            console.log('Finished!');
+          }            
         });
         
       })
@@ -103,7 +109,6 @@ function main() {
   });
 
 }
-
 async function getFieldsExcel(fileName){
 
     console.log('Getting fields from excel');
@@ -142,7 +147,6 @@ async function getFieldsExcel(fileName){
 
         //Remove first element (the header)
         fields.shift();
-        console.log('Get fields finished!');
 
         //Wait for the fields to be created and when finished, continue
         await createFields(fields)
@@ -154,8 +158,6 @@ async function getFieldsExcel(fileName){
               return;
             } 
             
-            console.log('Gettings profiles');
-
             //Wait for the profiles to be queried, when finished, continue
             await queryProfiles()
             .then( async (profiles) => {            
@@ -166,11 +168,13 @@ async function getFieldsExcel(fileName){
                   console.log('Profiles updated! ');
                 });
             })
-            .catch( (error) => {
-                worksheet.addRow({
-                    errorOn: "On querying profiles",
-                    errorMessage: error,
-                  }); 
+            .catch( (error) => {     
+
+              createErrorFile = true;
+              worksheet.addRow({
+                  errorOn: "On querying profiles",
+                  errorMessage: error,
+                }); 
             })  
         })
 
@@ -184,14 +188,12 @@ async function getFieldsExcel(fileName){
     })
 
 } 
-
 function createFields(fields){
+  console.log('Creating fields...');
   // Process in pararel all fields
   let promises = fields.map(createField);
   return Promise.all(promises);
 }
-
-//It will perform a connection to API, so async it should be
 function createField(field) {
 
   // let metadata = autoNumberMetadata(field, objectName);
@@ -213,6 +215,7 @@ function createField(field) {
           }else{
               //Log error
               console.log('Error when creating the field ' + JSON.stringify(result));
+              createErrorFile = true;
               worksheet.addRow({
                   errorOn: "On creating field",
                   errorMessage: result.errors,
@@ -222,14 +225,13 @@ function createField(field) {
       }
   });
 }  
-
-//It will perform a connection to API, so async it should be
 function queryProfiles(){
-    console.log('Querying profiles');
+    console.log('Gettings profiles...');
     //Return a promise
     return conn.query("SELECT Id, Name FROM Profile");
 }
 function updateProfiles(profiles){
+  console.log('Updating profiles...');
 	// Process in pararel all profiles
   let promises = profiles.records.map(updateProfile);
   return Promise.all(promises);
@@ -296,6 +298,13 @@ function updateProfile(profile) {
           function (err, result) {
             if (err) {
               console.log("Error on profile update: " + err);
+              createErrorFile = true;
+              worksheet.addRow({
+                  errorOn: "On updating profile",
+                  errorMessage: err,
+                  errorField: err,
+              });
+
             } else {
               console.log("Profile updated: " + JSON.stringify(result));
             }
@@ -304,7 +313,14 @@ function updateProfile(profile) {
     })
 }
 function writeFile(){
-    workbook.xlsx.writeFile("Errors.xlsx");
+  let errorFileName = 'Errors '+ generateErrorFileName() + '.xlsx';
+
+  workbook.xlsx.writeFile(errorFileName);
+}
+function generateErrorFileName(){
+  let date = new Date().toISOString().slice(0, 10);
+  let time = new Date().toLocaleTimeString().replace(/:/g,'.');
+  return date + ' ' +time;
 }
 
 //Execute main function
