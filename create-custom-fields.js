@@ -25,7 +25,8 @@ const metadataMapping = require('./utilities/metadata-mapping');
 
 let conn;
 let totalMetadata =  [];
-let objName;
+let objectName;
+let fileName;
 
 class Field {
     constructor(type, label, apiName, length, precision, decimalPlaces, description,  helpText,
@@ -52,27 +53,18 @@ class Field {
     
     }
 }
-class Input {
-    constructor(objectName, fileName){
-        this.objectName = objectName;
-        this.fileName = fileName;
-    }
-}
 function main() {
   const rl = READLINE.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
-  let input = new Input();
-
   rl.question(
     "What's the object API name? (including __c): ",
-    function (objectName) {
-      input.objectName = objectName;
-      objName = input.objectName;
-      rl.question("What's your excel file name?: ", function (fileName) {
-        input.fileName = fileName;
+    function (object) {
+      objectName = object;
+      rl.question("What's your excel file name?: ", function (file) {
+        fileName = file;
         rl.close();
       });
     }
@@ -91,7 +83,7 @@ function main() {
       .then(() => {
         console.log("Logged in correctly!");
 
-        getFieldsExcel(input.objectName, input.fileName)
+        getFieldsExcel(fileName)
         .then( () => {
           console.log('Finished... creating file');
           writeFile();
@@ -112,7 +104,7 @@ function main() {
 
 }
 
-async function getFieldsExcel(objectName, fileName){
+async function getFieldsExcel(fileName){
 
     console.log('Getting fields from excel');
     const xlsxFile = require('read-excel-file/node');  
@@ -201,8 +193,6 @@ function createFields(fields){
 
 //It will perform a connection to API, so async it should be
 function createField(field) {
-
-  let objectName = objName;  
 
   // let metadata = autoNumberMetadata(field, objectName);
   let metadata = metadataMapping.generateMetadata(field, objectName);
