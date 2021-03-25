@@ -209,7 +209,7 @@ async function createFields(fields, objectName) {
             //Log error
         }else{               
             if(result.success){                   
-                console.log('Good result ' + JSON.stringify(result));
+                console.log('Field created: ' + JSON.stringify(result));
 
                 //If the field is created, then we add it to the list of total metadata
                 totalMetadata.push(metadata); 
@@ -234,22 +234,13 @@ function queryProfiles(){
     return conn.query("SELECT Id, Name FROM Profile");
 }
 
-async function updateProfiles(profiles){
+function updateProfiles(profiles){
 	// Process in pararel all profiles
-  // let promise = new Promise(async (resolve, reject) => {
-  //   await profiles.records.map(updateProfilePermission)
-  //   .then(resolve('Done!'));    
-  // })
-
   let promises = profiles.records.map(updateProfilePermission);
-  // Promise.all(promises).then( () => console.log('Promised done!'));
   return Promise.all(promises);
-
-	// return await profiles.records.map(updateProfilePermission);
-  // return promise;
 }
 
-async function updateProfilePermission(profile) {
+function updateProfilePermission(profile) {
     
     let profileName;
     if( profile.Name === 'System Administrator'){
@@ -296,7 +287,7 @@ async function updateProfilePermission(profile) {
 
 		    return profile;
     })
-    .then(async function(profile){ 
+    .then(function(profile){ 
 
         if(profile == null || profile == undefined) return;
 
@@ -310,9 +301,9 @@ async function updateProfilePermission(profile) {
           },
           function (err, result) {
             if (err) {
-              console.log("Error on update " + err);
+              console.log("Error on profile update: " + err);
             } else {
-              console.log("Good result " + JSON.stringify(result));
+              console.log("Profile updated: " + JSON.stringify(result));
             }
           }
         );
