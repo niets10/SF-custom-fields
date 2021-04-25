@@ -1,5 +1,7 @@
 # SF-custom-fields
-Create custom fields using node js and jsforce
+Create custom fields using node js and jsforce.
+
+Since many times, especially at the beginning of projects, we need to create custom fields for business requirements, automating this task will save time for important more meaningful tasks like cooking tacos or sleeping siestas.
 
 # Create the authentication file
 Create a folder called config in the root of the project
@@ -33,6 +35,8 @@ npm install jsforce
 ```
 npm install-excel-file
 ```
+```
+npm install exceljs
 
 # Creating an excel file
 Create an excel file in the root of the project with extension `.xlsx`.
@@ -43,7 +47,7 @@ You can use the template that is in the repository.
 Open your command console, navigate to the folder where you clone the project and run the script
 
 ```
-node create-custom-fields.js
+node index.js
 ```
 
 You will be prompting to introduce the API name of the custom objects for which you want to create fields (make sure to include __c at the end) and the name of the excel file you want to use for metadata source.
