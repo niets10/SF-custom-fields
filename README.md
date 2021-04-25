@@ -52,3 +52,5 @@ node index.js
 
 You will be prompting to introduce the API name of the custom objects for which you want to create fields (make sure to include __c at the end) and the name of the excel file you want to use for metadata source.
 
+# Supported fields
+The fields in the excel are the ones supported. Fields like Lookups/MasterDetails are not (yet) supported nor formula fields (won't, most likely, ever be supported)
