@@ -37,6 +37,7 @@ npm install-excel-file
 ```
 ```
 npm install exceljs
+```
 
 # Creating an excel file
 Create an excel file in the root of the project with extension `.xlsx`.
