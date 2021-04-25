@@ -102,7 +102,7 @@ function currencyMetadata(field, objectName){
         scale: field.decimalPlaces,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false
     }
     return metadata;
 }
@@ -113,7 +113,7 @@ function dataDataTimeMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false
     }
     return metadata;
 }
@@ -124,7 +124,7 @@ function emailMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required,
+        required : field.required !== null ? field.required : false,
         unique: field.unique,
         externalId : field.externalId
     }
@@ -146,7 +146,7 @@ function locationMetadata(field, objectName){
         scale: field.decimalPlaces,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required,
+        required : field.required !== null ? field.required : false,
         displayLocationInDecimal: displayDecimals
     }
     return metadata;
@@ -160,7 +160,7 @@ function numberMetadata(field, objectName){
         scale: field.decimalPlaces,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required,
+        required : field.required !== null ? field.required : false,
         unique: field.unique,
         externalId : field.externalId
     }
@@ -175,7 +175,7 @@ function percentMetadata(field, objectName){
         scale: field.decimalPlaces,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false
     }
     return metadata;
 }
@@ -186,7 +186,7 @@ function phoneMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false
     }
     return metadata;
 }
@@ -207,7 +207,7 @@ function picklistMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required,
+        required : field.required !== null ? field.required : false,
         valueSet : {
             valueSetDefinition : {
                 sorted: false,
@@ -231,7 +231,7 @@ function multiPicklistMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required,
+        required : field.required !== null ? field.required : false,
         valueSet : {
             valueSetDefinition : {
                 sorted: false,
@@ -251,7 +251,7 @@ function textMetadata(field, objectName){
         length: field.length,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required,
+        required : field.required !== null ? field.required : false,
         unique: field.unique,
         externalId : field.externalId,
     }
@@ -264,7 +264,7 @@ function textAreaMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false,
     }
     return metadata;
 }
@@ -299,7 +299,7 @@ function timeMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false,
     }
     return metadata;
 }
@@ -310,7 +310,7 @@ function urlMetadata(field, objectName){
         fullName : objectName+"."+field.apiName,
         description: field.description !== null ? field.description : '',
         inlineHelpText : field.helpText !== null ? field.helpText : '',
-        required : field.required
+        required : field.required !== null ? field.required : false,
     }
     return metadata;
 }
