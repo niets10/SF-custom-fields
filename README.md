@@ -6,7 +6,7 @@ Since many times, especially at the beginning of projects, we need to create cus
 # Create the authentication file
 Create a folder called config in the root of the project
 
-Create a json file called default
+Create a json file called `default`
 
 Add the following information
 
