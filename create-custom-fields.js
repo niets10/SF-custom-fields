@@ -9,9 +9,9 @@ const CONFIG = require('config');
 const JSFORCE = require('jsforce');
 const SALESFORCE_CONFIG = CONFIG.get('salesForce');
 const READLINE = require("readline");
+const EXCELJS = require('exceljs');
 
 //Create excel file to log all the errors;
-const EXCELJS = require('exceljs');
 let workbook = new EXCELJS.Workbook();
 let worksheet = workbook.addWorksheet("Errors");
 worksheet.columns = [
@@ -323,5 +323,6 @@ function generateErrorFileName(){
   return date + ' ' +time;
 }
 
-//Execute main function
-main();
+//Export main function
+module.exports = { main };
+// main();
