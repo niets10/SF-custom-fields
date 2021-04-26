@@ -8,7 +8,7 @@ Create a folder called `config` in the root of the project
 
 Create a json file called `default`
 
-Add the following information
+Add the following information (replace login by test for sandboxes):
 
 ```
 {
@@ -20,7 +20,7 @@ Add the following information
 	}
 }
 ```
-> (replace login by test for sandboxes)
+
 # Installing dependencies
 
 Download node js from [Node JS](https://nodejs.org/es/download/). 
