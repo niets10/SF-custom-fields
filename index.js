@@ -1,3 +1,3 @@
-const CREATE_FIELDS = require('./create-custom-fields');
+const createCustomFields = require('./create-custom-fields');
 
-CREATE_FIELDS.main();
+createCustomFields.main();

@@ -5,14 +5,14 @@
 //npm install read-excel-file
 //npm install exceljs
 
-const CONFIG = require('config');
-const JSFORCE = require('jsforce');
-const SALESFORCE_CONFIG = CONFIG.get('salesForce');
-const READLINE = require("readline");
-const EXCELJS = require('exceljs');
+const config = require('config');
+const jsforce = require('jsforce');
+const readline = require("readline");
+const exceljs = require('exceljs');
+const SALESFORCE_CONFIG = config.get('salesForce');
 
 //Create excel file to log all the errors;
-let workbook = new EXCELJS.Workbook();
+let workbook = new exceljs.Workbook();
 let worksheet = workbook.addWorksheet("Errors");
 worksheet.columns = [
     { header: "Error on", key: "errorOn" },
@@ -56,7 +56,7 @@ class Field {
     }
 }
 function main() {
-  const rl = READLINE.createInterface({
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
@@ -73,7 +73,7 @@ function main() {
   );
 
   rl.on("close", function () {
-    conn = new JSFORCE.Connection({
+    conn = new jsforce.Connection({
       loginUrl: SALESFORCE_CONFIG.LoginUrl,
     });
 
@@ -325,4 +325,3 @@ function generateErrorFileName(){
 
 //Export main function
 module.exports = { main };
-// main();
