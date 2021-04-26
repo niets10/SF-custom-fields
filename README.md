@@ -4,7 +4,7 @@ Create custom fields using node js and jsforce.
 Since many times, especially at the beginning of projects, we need to create custom fields for business requirements, automating this task will save time for important more meaningful tasks like cooking tacos or sleeping siestas.
 
 # Create the authentication file
-Create a folder called config in the root of the project
+Create a folder called `config` in the root of the project
 
 Create a json file called `default`
 
