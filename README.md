@@ -20,7 +20,7 @@ Add the following information (replace login by test for sandboxes):
 	}
 }
 ```
-
+> (replace login by test for sandboxes)
 # Installing dependencies
 
 Download node js from [Node JS](https://nodejs.org/es/download/). 
